@@ -42,6 +42,8 @@ class SecurityIT extends BaseIT {
     @Autowired VenueRepository venueRepository;
     @Autowired EventRepository eventRepository;
     @Autowired TicketRepository ticketRepository;
+    @Autowired co.edu.unimagdalena.pulsepass.security.CustomUserDetailsService userDetailsService;
+    @Autowired jakarta.persistence.EntityManagerFactory entityManagerFactory;
 
     private static String suffix() {
         return UUID.randomUUID().toString().substring(0, 8);
@@ -262,5 +264,31 @@ class SecurityIT extends BaseIT {
         mvc.perform(get("/api/tickets/X")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/users/by-email").param("email", "a@b.com")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
+    }
+
+    // NFR-SEC003: la carga del principal no debe crecer con el numero de roles (sin N+1)
+    @Test
+    void principalLoad_DoesNotGrowWithNumberOfRoles() throws Exception {
+        String one = "uno" + suffix();
+        String many = "multi" + suffix();
+        register(one);
+        register(many);
+        grant(many, Role.STAFF);
+        grant(many, Role.ADMIN);
+        Long idOne = userRepository.findByUsername(one).orElseThrow().getId();
+        Long idMany = userRepository.findByUsername(many).orElseThrow().getId();
+
+        org.hibernate.stat.Statistics stats = entityManagerFactory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        stats.setStatisticsEnabled(true);
+
+        stats.clear();
+        userDetailsService.loadById(idOne);
+        long queriesOneRole = stats.getPrepareStatementCount();
+
+        stats.clear();
+        userDetailsService.loadById(idMany);
+        long queriesManyRoles = stats.getPrepareStatementCount();
+
+        assertThat(queriesManyRoles).isEqualTo(queriesOneRole);
     }
 }

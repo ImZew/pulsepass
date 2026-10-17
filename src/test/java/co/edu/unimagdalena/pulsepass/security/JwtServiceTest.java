@@ -91,4 +91,29 @@ class JwtServiceTest {
         assertThatThrownBy(() -> service("***no-base64***", "pulsepass-api", NOW))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void tokenSignedWithUnexpectedAlgorithm_IsRejected() {
+        byte[] bytes = new byte[64];
+        new SecureRandom().nextBytes(bytes);
+        JwtService jwt = service(Base64.getEncoder().encodeToString(bytes), "pulsepass-api", NOW);
+        String hs512 = Jwts.builder().subject("1").issuer("pulsepass-api").id("x")
+                .expiration(java.util.Date.from(NOW.plusSeconds(600)))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(bytes)) // 64 bytes => HS512
+                .compact();
+        assertThatThrownBy(() -> jwt.validateAndGetUserId(hs512)).isInstanceOf(InvalidJwtException.class);
+    }
+
+    @Test
+    void tokenWithoutRequiredClaims_IsRejected() {
+        byte[] bytes = Base64.getDecoder().decode(SECRET);
+        JwtService jwt = service(SECRET, "pulsepass-api", NOW);
+        String noExp = Jwts.builder().subject("1").issuer("pulsepass-api").id("x")
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(bytes), Jwts.SIG.HS256).compact();
+        String noSub = Jwts.builder().issuer("pulsepass-api").id("x")
+                .expiration(java.util.Date.from(NOW.plusSeconds(600)))
+                .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(bytes), Jwts.SIG.HS256).compact();
+        assertThatThrownBy(() -> jwt.validateAndGetUserId(noExp)).isInstanceOf(InvalidJwtException.class);
+        assertThatThrownBy(() -> jwt.validateAndGetUserId(noSub)).isInstanceOf(InvalidJwtException.class);
+    }
 }

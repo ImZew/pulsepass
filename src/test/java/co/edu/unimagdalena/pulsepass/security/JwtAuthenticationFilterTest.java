@@ -110,4 +110,20 @@ class JwtAuthenticationFilterTest {
         verify(chain, never()).doFilter(any(), any());
         assertThat(response.getStatus()).isEqualTo(401);
     }
+
+    @Test
+    void existingAuthentication_IsNotOverwritten() throws Exception {
+        org.springframework.security.core.Authentication existing =
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+                        .authenticated("previo", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(existing);
+        request.addHeader("Authorization", "Bearer tok");
+        when(jwtService.validateAndGetUserId("tok")).thenReturn(7L);
+        when(uds.loadById(7L)).thenReturn(principal(true));
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isSameAs(existing);
+    }
 }
