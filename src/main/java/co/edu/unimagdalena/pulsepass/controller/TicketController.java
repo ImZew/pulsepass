@@ -6,6 +6,7 @@ import co.edu.unimagdalena.pulsepass.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class TicketController {
 
     // POST /api/tickets
     @PostMapping
+    @PreAuthorize("hasRole('USER') and @authz.isSelfByEmail(#request.userEmail())")
     public ResponseEntity<Void> purchase(@Valid @RequestBody PurchaseTicketRequest request) {
         ticketService.purchase(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -29,18 +31,21 @@ public class TicketController {
 
     // GET /api/tickets/{ticketCode}
     @GetMapping("/{ticketCode}")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN') or @authz.ownsTicket(#ticketCode)")
     public ResponseEntity<TicketResponse> getByCode(@PathVariable String ticketCode) {
         return ResponseEntity.ok(ticketService.findByCode(ticketCode));
     }
 
     // GET /api/tickets/by-user?email=...
     @GetMapping("/by-user")
+    @PreAuthorize("hasRole('ADMIN') or @authz.isSelfByEmail(#email)")
     public ResponseEntity<List<TicketResponse>> getByUser(@RequestParam String email) {
         return ResponseEntity.ok(ticketService.findByUserEmail(email));
     }
 
     // PATCH /api/tickets/{ticketCode}/cancel
     @PatchMapping("/{ticketCode}/cancel")
+    @PreAuthorize("hasRole('ADMIN') or @authz.ownsTicket(#ticketCode)")
     public ResponseEntity<Void> cancel(@PathVariable String ticketCode) {
         ticketService.cancel(ticketCode);
         return ResponseEntity.ok().build();
@@ -48,6 +53,7 @@ public class TicketController {
 
     // PATCH /api/tickets/{ticketCode}/use
     @PatchMapping("/{ticketCode}/use")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     public ResponseEntity<Void> markAsUsed(@PathVariable String ticketCode) {
         ticketService.markAsUsed(ticketCode);
         return ResponseEntity.ok().build();
