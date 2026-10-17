@@ -1,0 +1,46 @@
+package co.edu.unimagdalena.pulsepass.service.impl;
+
+import co.edu.unimagdalena.pulsepass.exception.ResourceNotFoundException;
+import co.edu.unimagdalena.pulsepass.mapper.ArtistMapper;
+import co.edu.unimagdalena.pulsepass.repository.ArtistRepository;
+import co.edu.unimagdalena.pulsepass.service.ArtistService;
+import co.edu.unimagdalena.pulsepass.dto.response.ArtistResponse;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional(readOnly = true)
+public class ArtistServiceImpl implements ArtistService {
+
+    private final ArtistRepository artistRepository;
+    private final ArtistMapper artistMapper;
+
+    public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+        this.artistRepository = artistRepository;
+        this.artistMapper = artistMapper;
+    }
+
+    @Override
+    public ArtistResponse findById(Long id) {
+        return artistRepository.findById(id)
+                .map(artistMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Artist not found with id: " + id));
+    }
+
+    @Override
+    public ArtistResponse findByStageName(String stageName) {
+        return artistRepository.findByStageNameIgnoreCase(stageName)
+                .map(artistMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Artist not found: " + stageName));
+    }
+
+    @Override
+    public List<ArtistResponse> findActiveArtists() {
+        return artistRepository.findByActiveTrueOrderByStageNameAsc()
+                .stream()
+                .map(artistMapper::toResponse)
+                .toList();
+    }
+}
