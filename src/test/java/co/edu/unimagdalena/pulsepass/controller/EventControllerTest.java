@@ -6,6 +6,13 @@ import co.edu.unimagdalena.pulsepass.dto.response.EventResponse;
 import co.edu.unimagdalena.pulsepass.dto.response.EventSummaryResponse;
 import co.edu.unimagdalena.pulsepass.service.EventService;
 import co.edu.unimagdalena.pulsepass.service.TicketService;
+import co.edu.unimagdalena.pulsepass.security.CustomUserDetailsService;
+import co.edu.unimagdalena.pulsepass.security.JwtService;
+import co.edu.unimagdalena.pulsepass.security.SecurityConfig;
+import co.edu.unimagdalena.pulsepass.service.AuthorizationService;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +27,28 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(SecurityConfig.class)
+@WithMockUser(roles = "ADMIN")
 @WebMvcTest(EventController.class)
 class EventControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    // Beans requeridos por SecurityConfig (la autenticacion real se prueba en SecurityMatrixTest)
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean(name = "authz")
+    private AuthorizationService authz;
+
+    @BeforeEach
+    void allowOwnership() {
+        org.mockito.Mockito.when(authz.canViewUnpublishedEvents()).thenReturn(true);
+    }
 
     @MockitoBean
     private EventService eventService;
