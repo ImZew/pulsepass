@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marca-50: #eef2ff;
+  --color-marca-500: #6366f1;
+  --color-marca-600: #4f46e5;
+  --color-marca-700: #4338ca;
+  --color-acento-500: #f43f5e;
+  --color-acento-600: #e11d48;
+  --color-papel-50: #fafaf7;
+  --color-tinta-950: #090d16;
+
+  --font-titulo: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-cuerpo: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --shadow-brutal-sm: 3px 3px 0px 0px #0f172a;
+  --shadow-brutal: 5px 5px 0px 0px #0f172a;
+  --shadow-brutal-lg: 8px 8px 0px 0px #0f172a;
+  --shadow-brutal-marca: 6px 6px 0px 0px #4f46e5;
+  --shadow-brutal-acento: 6px 6px 0px 0px #f43f5e;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-cuerpo);
+    background-color: #f8fafc;
+    color: #0f172a;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-titulo);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Utilidades Neo-Brutalistas Editoriales + Micro-interacciones 3D */
+.escena-3d {
+  perspective: 1100px;
+}
+
+/* La inclinación la fijan --inclinar-x / --inclinar-y desde Tarjeta (puntero). */
+.tarjeta-3d {
+  --elevar: 0px;
+  transform-style: preserve-3d;
+  transform: translate3d(var(--elevar), var(--elevar), 0) rotateX(var(--inclinar-x, 0deg))
+    rotateY(var(--inclinar-y, 0deg));
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.tarjeta-3d:hover,
+.tarjeta-3d:focus-within {
+  --elevar: -3px;
+  box-shadow: 8px 8px 0px 0px #0f172a;
+}
+
+@keyframes modal-entrada {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) rotateX(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modal-entrada {
+  transform-origin: top center;
+  animation: modal-entrada 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-3d,
+  .tarjeta-3d:hover,
+  .tarjeta-3d:focus-within,
+  .boleto-3d,
+  .boleto-3d:hover {
+    transform: none;
+    transition: none;
+  }
+
+  .modal-entrada {
+    animation: none;
+  }
+}
+
+.boleto-3d {
+  transform-style: preserve-3d;
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.boleto-3d:hover {
+  transform: translate3d(-2px, -4px, 16px) rotateX(3deg) rotateY(-2deg);
+}
+
+.marco-brutal {
+  border: 2px solid #0f172a;
+  box-shadow: 5px 5px 0px 0px #0f172a;
+}
+
+.marco-brutal-sm {
+  border: 2px solid #0f172a;
+  box-shadow: 3px 3px 0px 0px #0f172a;
+}
+
+.patron-editorial {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.14) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
