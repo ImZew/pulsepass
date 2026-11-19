@@ -117,6 +117,19 @@ export const EVENTOS_DETALLE_DEMO: Record<string, EventResponse> = {
     venueName: 'Marina Convention Center',
     artists: [{ id: 1, stageName: 'Solar Beat', active: true }],
   },
+  'DRAFT-2026': {
+    id: 104,
+    eventCode: 'DRAFT-2026',
+    name: 'Festival Borrador 2026',
+    description: 'Evento en borrador listo para asignar artistas y publicar.',
+    category: 'MUSIC',
+    status: 'DRAFT',
+    eventDate: '2026-12-28T19:00:00',
+    minimumAge: 18,
+    venueCode: 'VEN-SMR-01',
+    venueName: 'Marina Convention Center',
+    artists: [{ id: 1, stageName: 'Solar Beat', active: true }],
+  },
 }
 
 export const USUARIOS_PERFIL_DEMO: Record<string, UserResponse> = {
@@ -260,6 +273,52 @@ export const handlers: RequestHandler[] = [
   }),
 
   // —— Eventos ———————————————————————————————————————————————————
+  http.post('/api/events', async ({ request }) => {
+    const body = (await request.json()) as {
+      eventCode?: string
+      name?: string
+      description?: string
+      category?: string
+      eventDate?: string
+      minimumAge?: number
+      venueCode?: string
+    }
+
+    const code = (body.eventCode ?? '').trim()
+    if (code.length === 0 || (body.name ?? '').trim().length === 0) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 400,
+          error: 'Bad Request',
+          message: 'Validation failed',
+          details: {
+            ...(code.length === 0 ? { eventCode: 'eventCode must not be blank' } : {}),
+            ...((body.name ?? '').trim().length === 0
+              ? { name: 'name must not be blank' }
+              : {}),
+          },
+        },
+        { status: 400 },
+      )
+    }
+
+    if (EVENTOS_DETALLE_DEMO[code] !== undefined || code === 'DUPLICADO-2026') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: `Event code already exists: ${code}`,
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 201 })
+  }),
+
   http.get('/api/events/published', () => {
     return HttpResponse.json(EVENTOS_RESUMEN_DEMO)
   }),
@@ -274,6 +333,98 @@ export const handlers: RequestHandler[] = [
       return HttpResponse.json([EVENTOS_RESUMEN_DEMO[1]!])
     }
     return HttpResponse.json([])
+  }),
+
+  http.patch('/api/events/:eventCode/publish', ({ params }) => {
+    const code = String(params.eventCode ?? '')
+    const detalle = EVENTOS_DETALLE_DEMO[code]
+    if (!detalle) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Event not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+
+    if (detalle.status !== 'DRAFT') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Only DRAFT events can be published',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    if (detalle.artists.length === 0) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Event must have at least one artist before publishing',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.post('/api/events/:eventCode/artists/:artistId', ({ params }) => {
+    const code = String(params.eventCode ?? '')
+    const artistId = Number(params.artistId)
+    const detalle = EVENTOS_DETALLE_DEMO[code]
+    if (!detalle) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Event not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+
+    const artista = ARTISTAS_DEMO.find((a) => a.id === artistId)
+    if (!artista) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Artist not found: ${String(params.artistId)}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+
+    if (detalle.artists.some((a) => a.id === artistId)) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Artist is already assigned to this event',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 200 })
   }),
 
   http.get('/api/events/:eventCode/tickets/paid', ({ params }) => {
@@ -380,7 +531,28 @@ export const handlers: RequestHandler[] = [
     return HttpResponse.json(encontrada)
   }),
 
-  // —— Usuarios (C-05: GET /api/users/{username}) ————————————————
+  // —— Usuarios (C-05: GET /api/users/{username} y by-email) ————
+  http.get('/api/users/by-email', ({ request }) => {
+    const url = new URL(request.url)
+    const email = (url.searchParams.get('email') ?? '').trim().toLowerCase()
+    const perfil = Object.values(USUARIOS_PERFIL_DEMO).find(
+      (u) => u.email.toLowerCase() === email,
+    )
+    if (!perfil) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `User not found with email: ${email}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+    return HttpResponse.json(perfil)
+  }),
+
   http.get('/api/users/:username', ({ params }) => {
     const username = String(params.username ?? '')
     const perfil = USUARIOS_PERFIL_DEMO[username]

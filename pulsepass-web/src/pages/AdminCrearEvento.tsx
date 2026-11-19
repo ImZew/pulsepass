@@ -1,11 +1,8 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaAdminCrearEvento } from '../funcionalidades/admin/PaginaAdminCrearEvento'
 
 export function AdminCrearEvento() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Crear evento</h1>
-    </Tarjeta>
-  )
+  return <PaginaAdminCrearEvento />
 }
 
 export default AdminCrearEvento
+
