@@ -1,0 +1,6 @@
+# Plantillas editadas con datos reales y evidencias: NO versionar
+*.local.json
+*.secrets.json
+*.filled.*
+evidencia/
+*.har
