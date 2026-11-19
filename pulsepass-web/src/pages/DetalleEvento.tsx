@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaDetalleEvento } from '../funcionalidades/eventos/PaginaDetalleEvento'
 
 export function DetalleEvento() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Detalle de evento</h1>
-    </Tarjeta>
-  )
+  return <PaginaDetalleEvento />
 }
 
 export default DetalleEvento

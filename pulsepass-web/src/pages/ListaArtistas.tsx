@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaArtistas } from '../funcionalidades/artistas/PaginaArtistas'
 
 export function ListaArtistas() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Artistas</h1>
-    </Tarjeta>
-  )
+  return <PaginaArtistas />
 }
 
 export default ListaArtistas

@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaDetalleArtista } from '../funcionalidades/artistas/PaginaDetalleArtista'
 
 export function DetalleArtista() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Detalle de artista</h1>
-    </Tarjeta>
-  )
+  return <PaginaDetalleArtista />
 }
 
 export default DetalleArtista

@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaEventos } from '../funcionalidades/eventos/PaginaEventos'
 
 export function CatalogoEventos() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Cartelera</h1>
-    </Tarjeta>
-  )
+  return <PaginaEventos />
 }
 
 export default CatalogoEventos

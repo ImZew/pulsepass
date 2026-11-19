@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaDetalleSede } from '../funcionalidades/sedes/PaginaDetalleSede'
 
 export function DetalleSede() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Detalle de sede</h1>
-    </Tarjeta>
-  )
+  return <PaginaDetalleSede />
 }
 
 export default DetalleSede
