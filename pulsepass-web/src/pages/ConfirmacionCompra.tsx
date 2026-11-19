@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaConfirmacionCompra } from '../funcionalidades/tickets/PaginaConfirmacionCompra'
 
 export function ConfirmacionCompra() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Confirmación de compra</h1>
-    </Tarjeta>
-  )
+  return <PaginaConfirmacionCompra />
 }
 
 export default ConfirmacionCompra

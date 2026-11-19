@@ -22,6 +22,9 @@ export const CompraTicketSchema = z.object({
 })
 export type CompraTicketForm = z.infer<typeof CompraTicketSchema>
 
+export const CompraSchema = CompraTicketSchema
+export type CompraForm = CompraTicketForm
+
 export const PurchaseTicketRequestSchema = z.object({
   userEmail: z.email(),
   eventCode: z.string().min(1),

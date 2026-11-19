@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaDetalleTicket } from '../funcionalidades/tickets/PaginaDetalleTicket'
 
 export function DetalleTicket() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Detalle de ticket</h1>
-    </Tarjeta>
-  )
+  return <PaginaDetalleTicket />
 }
 
 export default DetalleTicket

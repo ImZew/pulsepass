@@ -23,6 +23,15 @@ export function renderConProveedores(opciones: OpcionesRenderConProveedores = {}
     queryClient = crearQueryClient(),
   } = opciones
 
+  if (opciones.queryClient === undefined) {
+    queryClient.setDefaultOptions({
+      queries: {
+        ...queryClient.getDefaultOptions().queries,
+        retryDelay: 0,
+      },
+    })
+  }
+
   if (tokenInicial !== undefined) {
     guardarToken(tokenInicial, expiresInSegundos)
   }

@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaMisTickets } from '../funcionalidades/tickets/PaginaMisTickets'
 
 export function MisTickets() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Mis tickets</h1>
-    </Tarjeta>
-  )
+  return <PaginaMisTickets />
 }
 
 export default MisTickets

@@ -1,5 +1,6 @@
+import { clsx } from 'clsx'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { BadgeCategoria, BadgeEstadoEvento } from '../../componentes/Badge'
 import { Boton } from '../../componentes/Boton'
 import { Cargando } from '../../componentes/Cargando'
@@ -21,13 +22,27 @@ import { TicketTypeSchema, type TicketType } from '../../lib/tipos'
 import { obtenerInicialesArtista } from '../artistas/iniciales'
 import { useAuth } from '../auth/hooks'
 import { useSede } from '../sedes/hooks'
+import { ModalCompraTicket } from '../tickets/ModalCompraTicket'
 import { useEvento } from './hooks'
 
 export function PaginaDetalleEvento() {
   const { eventCode = '' } = useParams<{ eventCode: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { sesion, tieneRol } = useAuth()
   const navigate = useNavigate()
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TicketType>('GENERAL')
+
+  const comprarParam = searchParams.get('comprar')
+  const tipoDesdeUrl = TicketTypeSchema.safeParse(comprarParam)
+  const tipoInicialModal: TicketType = tipoDesdeUrl.success
+    ? tipoDesdeUrl.data
+    : tipoSeleccionado
+
+  function cerrarModalCompra() {
+    const siguientes = new URLSearchParams(searchParams)
+    siguientes.delete('comprar')
+    setSearchParams(siguientes, { replace: true })
+  }
 
   const consultaEvento = useEvento(eventCode)
   const venueCode = consultaEvento.data?.venueCode ?? ''
@@ -216,11 +231,12 @@ export function PaginaDetalleEvento() {
                 {TicketTypeSchema.options.map((tipo) => (
                   <label
                     key={tipo}
-                    className={`flex cursor-pointer items-center justify-between border-2 border-slate-900 px-4 py-3 font-titulo text-sm font-bold uppercase transition-colors ${
+                    className={clsx(
+                      'flex cursor-pointer items-center justify-between border-2 border-slate-900 px-4 py-3 font-titulo text-sm font-bold uppercase transition-colors',
                       tipoSeleccionado === tipo
                         ? 'bg-amber-300 shadow-brutal-sm'
-                        : 'bg-white hover:bg-slate-50'
-                    }`}
+                        : 'bg-white hover:bg-slate-50',
+                    )}
                   >
                     <span className="flex items-center gap-2.5">
                       <input
@@ -274,6 +290,17 @@ export function PaginaDetalleEvento() {
           </aside>
         )}
       </div>
+
+      {sesion.estado === 'autenticado' && tieneRol('USER') && (
+        <ModalCompraTicket
+          abierto={comprarParam !== null}
+          eventCode={evento.eventCode}
+          eventName={evento.name}
+          userEmail={sesion.usuario.email}
+          tipoInicial={tipoInicialModal}
+          onCerrar={cerrarModalCompra}
+        />
+      )}
     </div>
   )
 }

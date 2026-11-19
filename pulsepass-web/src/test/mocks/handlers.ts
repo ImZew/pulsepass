@@ -6,6 +6,8 @@ import type {
   EventSummaryResponse,
 } from '../../funcionalidades/eventos/tipos'
 import type { VenueResponse } from '../../funcionalidades/sedes/tipos'
+import type { TicketResponse } from '../../funcionalidades/tickets/tipos'
+import type { UserResponse } from '../../funcionalidades/usuarios/tipos'
 
 export const USUARIO_DEMO_USER: AuthenticatedUserResponse = {
   id: 1,
@@ -116,6 +118,60 @@ export const EVENTOS_DETALLE_DEMO: Record<string, EventResponse> = {
     artists: [{ id: 1, stageName: 'Solar Beat', active: true }],
   },
 }
+
+export const USUARIOS_PERFIL_DEMO: Record<string, UserResponse> = {
+  andrea: {
+    username: 'andrea',
+    email: 'andrea@pulsepass.co',
+    active: true,
+  },
+  carlos_staff: {
+    username: 'carlos_staff',
+    email: 'staff@pulsepass.co',
+    active: true,
+  },
+  admin_pulse: {
+    username: 'admin_pulse',
+    email: 'admin@pulsepass.co',
+    active: true,
+  },
+}
+
+export const TICKETS_DEMO: TicketResponse[] = [
+  {
+    id: 505,
+    ticketCode: 'TKT-CMF-001',
+    type: 'VIP',
+    price: 350000,
+    status: 'PAID',
+    purchaseDate: '2026-11-18T14:30:00',
+    userEmail: 'andrea@pulsepass.co',
+    eventCode: 'CMF-2026',
+    eventName: 'Caribbean Music Fest 2026',
+  },
+  {
+    id: 502,
+    ticketCode: 'TKT-TECH-002',
+    type: 'GENERAL',
+    price: 120000,
+    status: 'USED',
+    purchaseDate: '2026-11-10T09:15:00',
+    userEmail: 'andrea@pulsepass.co',
+    eventCode: 'TECH-2026',
+    eventName: 'Caribe Tech Summit 2026',
+  },
+  {
+    id: 501,
+    ticketCode: 'TKT-CMF-003',
+    type: 'STUDENT',
+    price: 80000,
+    status: 'CANCELLED',
+    purchaseDate: '2026-11-05T18:00:00',
+    userEmail: 'andrea@pulsepass.co',
+    eventCode: 'CMF-2026',
+    eventName: 'Caribbean Music Fest 2026',
+  },
+]
 
 export const handlers: RequestHandler[] = [
   // —— Auth ——————————————————————————————————————————————————————
@@ -301,5 +357,129 @@ export const handlers: RequestHandler[] = [
       )
     }
     return HttpResponse.json(encontrada)
+  }),
+
+  // —— Usuarios (C-05: GET /api/users/{username}) ————————————————
+  http.get('/api/users/:username', ({ params }) => {
+    const username = String(params.username ?? '')
+    const perfil = USUARIOS_PERFIL_DEMO[username]
+    if (!perfil) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `User not found: ${username}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+    return HttpResponse.json(perfil)
+  }),
+
+  // —— Tickets ———————————————————————————————————————————————————
+  http.post('/api/tickets', async ({ request }) => {
+    const body = (await request.json()) as {
+      userEmail?: string
+      eventCode?: string
+      type?: string
+    }
+    if (body.eventCode === 'SOLD-2026') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'No tickets available for this event',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+    return new HttpResponse(null, { status: 201 })
+  }),
+
+  http.get('/api/tickets/by-user', ({ request }) => {
+    const url = new URL(request.url)
+    const email = url.searchParams.get('email') ?? ''
+    const filtrados = TICKETS_DEMO.filter((t) => t.userEmail === email)
+    return HttpResponse.json(filtrados)
+  }),
+
+  http.get('/api/tickets/:ticketCode', ({ params }) => {
+    const code = String(params.ticketCode ?? '')
+    if (code === 'TKT-AJENO-999') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 403,
+          error: 'Forbidden',
+          message: 'Access denied to this ticket',
+          details: {},
+        },
+        { status: 403 },
+      )
+    }
+
+    const encontrado = TICKETS_DEMO.find((t) => t.ticketCode === code)
+    if (!encontrado) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Ticket not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+    return HttpResponse.json(encontrado)
+  }),
+
+  http.patch('/api/tickets/:ticketCode/cancel', ({ params }) => {
+    const code = String(params.ticketCode ?? '')
+    const encontrado = TICKETS_DEMO.find((t) => t.ticketCode === code)
+    if (!encontrado) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Ticket not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+
+    if (encontrado.status === 'USED') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Used tickets cannot be cancelled',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    if (encontrado.status === 'CANCELLED') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Ticket is already cancelled',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 200 })
   }),
 ]
