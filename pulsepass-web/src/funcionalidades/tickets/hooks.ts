@@ -3,6 +3,8 @@ import {
   cancelarTicket,
   comprarTicket,
   listarMisTickets,
+  listarTicketsPagadosPorEvento,
+  marcarTicketComoUsado,
   obtenerTicketPorCodigo,
 } from './api'
 import type { PurchaseTicketRequest } from './tipos'
@@ -55,5 +57,30 @@ export function useCancelarTicket() {
         queryClient.invalidateQueries({ queryKey: ['ticket', ticketCode] }),
       ])
     },
+  })
+}
+
+export function useMarcarTicketComoUsado() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ticketCode: string) => marcarTicketComoUsado(ticketCode),
+    onSuccess: async (_resultado, ticketCode) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['ticket', ticketCode] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets', 'pagados'] }),
+        queryClient.invalidateQueries({ queryKey: ['tickets'] }),
+      ])
+    },
+  })
+}
+
+export function useTicketsPagadosPorEvento(eventCode: string, habilitado = true) {
+  const limpio = eventCode.trim()
+  return useQuery({
+    queryKey: ['tickets', 'pagados', limpio],
+    queryFn: () => listarTicketsPagadosPorEvento(limpio),
+    enabled: habilitado && limpio.length > 0,
+    staleTime: TREINTA_SEGUNDOS_MS,
   })
 }

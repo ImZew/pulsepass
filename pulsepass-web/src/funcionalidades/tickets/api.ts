@@ -80,3 +80,16 @@ export async function cancelarTicket(ticketCode: string): Promise<void> {
     method: 'PATCH',
   })
 }
+
+export async function marcarTicketComoUsado(ticketCode: string): Promise<void> {
+  await http(`/tickets/${encodeURIComponent(ticketCode)}/use`, {
+    method: 'PATCH',
+  })
+}
+
+export function listarTicketsPagadosPorEvento(eventCode: string): Promise<TicketResponse[]> {
+  return http(`/events/${encodeURIComponent(eventCode)}/tickets/paid`, {
+    method: 'GET',
+    schema: ListaTicketsSchema,
+  })
+}

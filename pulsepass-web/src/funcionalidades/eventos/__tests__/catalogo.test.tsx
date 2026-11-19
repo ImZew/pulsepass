@@ -149,9 +149,12 @@ describe('Catálogo Público — Inicio, Eventos, Artistas y Sedes (Etapa 5)', (
     await usuario.click(screen.getByRole('link', { name: /Marina Convention Center/i }))
 
     expect(
-      await screen.findByRole('heading', { name: 'Marina Convention Center' }),
+      await screen.findByRole('heading', {
+        name: 'Marina Convention Center',
+        level: 1,
+      }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Capacidad: 3000 personas')).toBeInTheDocument()
+    expect(await screen.findByText('Capacidad: 3000 personas')).toBeInTheDocument()
     vista.unmount()
 
     renderConProveedores({ rutaInicial: '/sedes/VEN-INEXISTENTE' })

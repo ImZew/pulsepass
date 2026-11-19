@@ -276,6 +276,27 @@ export const handlers: RequestHandler[] = [
     return HttpResponse.json([])
   }),
 
+  http.get('/api/events/:eventCode/tickets/paid', ({ params }) => {
+    const code = String(params.eventCode ?? '')
+    const detalle = EVENTOS_DETALLE_DEMO[code]
+    if (!detalle) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Event not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+    const pagados = TICKETS_DEMO.filter(
+      (t) => t.eventCode === code && t.status === 'PAID',
+    )
+    return HttpResponse.json(pagados)
+  }),
+
   http.get('/api/events/:eventCode', ({ params }) => {
     const code = String(params.eventCode ?? '')
     const detalle = EVENTOS_DETALLE_DEMO[code]
@@ -474,6 +495,38 @@ export const handlers: RequestHandler[] = [
           status: 409,
           error: 'Conflict',
           message: 'Ticket is already cancelled',
+          details: {},
+        },
+        { status: 409 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.patch('/api/tickets/:ticketCode/use', ({ params }) => {
+    const code = String(params.ticketCode ?? '')
+    const encontrado = TICKETS_DEMO.find((t) => t.ticketCode === code)
+    if (!encontrado) {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 404,
+          error: 'Not Found',
+          message: `Ticket not found: ${code}`,
+          details: {},
+        },
+        { status: 404 },
+      )
+    }
+
+    if (encontrado.status !== 'PAID') {
+      return HttpResponse.json(
+        {
+          timestamp: '2026-11-19T00:00:00',
+          status: 409,
+          error: 'Conflict',
+          message: 'Only PAID tickets can be marked as USED',
           details: {},
         },
         { status: 409 },

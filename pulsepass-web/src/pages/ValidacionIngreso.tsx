@@ -1,11 +1,7 @@
-import { Tarjeta } from '../componentes/Tarjeta'
+import { PaginaValidacionIngreso } from '../funcionalidades/staff/PaginaValidacionIngreso'
 
 export function ValidacionIngreso() {
-  return (
-    <Tarjeta>
-      <h1 className="font-titulo text-2xl font-extrabold uppercase">Validación de ingreso</h1>
-    </Tarjeta>
-  )
+  return <PaginaValidacionIngreso />
 }
 
 export default ValidacionIngreso
