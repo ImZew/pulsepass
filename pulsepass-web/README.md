@@ -1,32 +1,23 @@
-# React + TypeScript + Vite
+# PulsePass Web — Frontend (React + TypeScript + Tailwind v4)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web SPA para la plataforma de gestión y boletería de eventos **PulsePass**, construida con estética **Neo-Brutalista Editorial** y componentes 3D interactivos.
 
-Currently, two official plugins are available:
+## Stack Tecnológico
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* **Core:** React 19, TypeScript (modo estricto), Vite
+* **Estilos:** Tailwind CSS v4 (`clsx` para composición tipada)
+* **Enrutamiento:** React Router v8 (carga perezosa `lazy` en rutas secundarias y protección por rol)
+* **Estado y Datos:** TanStack Query v5, React Hook Form + Zod (validación de formularios y contratos HTTP)
+* **Calidad y Pruebas:** `oxlint`, Vitest, Testing Library, MSW (Mock Service Worker)
 
-## React Compiler
+## Requisitos Previos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Node.js** 20+ y **npm**
+* **Backend Spring Boot** ejecutándose en `http://localhost:8080` (PostgreSQL + Flyway activos y variable `PULSEPASS_JWT_SECRET_BASE64` configurada)
 
-## Expanding the Oxlint configuration
+## Instalación y Ejecución Local
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+```bash
+cd pulsepass-web
+npm install
+npm run dev
